@@ -4,8 +4,6 @@
   shell: slappasswd -h {SHA} -s {{ default_user_password }}
   register: default_password
 
-- debug: var=openldap_create_organizationalunits
-
 - name: Copy LDAP DIT templates
   template:
     src: "dit.ldif.j2"
