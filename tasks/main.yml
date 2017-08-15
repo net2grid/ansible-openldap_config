@@ -1,0 +1,71 @@
+---
+# tasks file for jpnewman.openldap-server
+- name: Generate default password
+  shell: slappasswd -h {SHA} -s {{ default_user_password }}
+  register: default_password
+
+- debug: var=openldap_create_organizationalunits
+
+- name: Copy LDAP DIT templates
+  template:
+    src: "dit.ldif.j2"
+    dest: "/tmp/dit-{{ item }}.ldif"
+    owner: root
+    group: root
+    mode: 0644
+  with_items: "{{ openldap_create_organizationalunits }}"
+
+- name: Copy LDAP groups templates
+  template:
+    src: "groups.ldif.j2"
+    dest: "/tmp/groups-{{ item.name }}.ldif"
+    owner: root
+    group: root
+    mode: 0644
+  with_items: "{{ openldap_create_groups }}"
+
+- name: Copy LDAP users templates
+  template:
+    src: "users.ldif.j2"
+    dest: "/tmp/users-{{ item.name }}.ldif"
+    owner: root
+    group: root
+    mode: 0644
+  with_items: "{{ openldap_create_people }}"
+
+- name: Create LDAP directory information tree (DIT)
+  shell: ldapadd -x -D "cn=Manager,dc={{ openldap_server_domain_name.split('.')[0] }},dc={{ openldap_server_domain_name.split('.')[1] }}" -w {{ openldap_server_rootpw }} -f /tmp/dit-{{ item }}.ldif && touch "{{ openldap_server_app_path }}/{{ item }}_dit_created"
+  args:
+     creates: "{{ openldap_server_app_path }}/dit_created"
+  with_items: "{{ openldap_create_organizationalunits }}"
+
+- name: Create LDAP groups
+  shell: ldapadd -x -D "cn=Manager,dc={{ openldap_server_domain_name.split('.')[0] }},dc={{ openldap_server_domain_name.split('.')[1] }}" -w {{ openldap_server_rootpw }} -f /tmp/groups-{{ item.name }}.ldif && touch "{{ openldap_server_app_path }}/{{ item.name }}_groups_created"
+  args:
+     creates: "{{ openldap_server_app_path }}/groups_created"
+  with_items: "{{ openldap_create_groups }}"
+
+- name: Create LDAP users
+  shell: ldapadd -x -D "cn=Manager,dc={{ openldap_server_domain_name.split('.')[0] }},dc={{ openldap_server_domain_name.split('.')[1] }}" -w {{ openldap_server_rootpw }} -f /tmp/users-{{ item.name }}.ldif && touch "{{ openldap_server_app_path }}/{{ item.name }}_users_created"
+  args:
+     creates: "{{ openldap_server_app_path }}/users_created"
+  with_items: "{{ openldap_create_people }}"
+
+- name: Copy additional LDIF definitions
+  template:
+    src: "{{ item }}"
+    dest: "/tmp/{{ item }}"
+    owner: root
+    group: root
+    mode: 0644
+  with_items: "{{ openldap_user_ldifs }}"
+
+#- name: Remove LDIF files
+#  file:
+#    path: "{{ item }}"
+#    force: yes
+#    state: absent
+#  with_items:
+#    - dit.ldif
+#    - groups.ldif
+#    - users.ldif

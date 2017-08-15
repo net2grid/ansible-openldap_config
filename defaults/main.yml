@@ -1,0 +1,27 @@
+---
+# defaults file for net2grid.openldap_config
+
+default_user_password: password123
+
+openldap_create_organizationalunits:
+  - Bindings
+  - Customers
+  - Groups
+  - Hosts
+  - People
+  - System
+
+openldap_create_groups:
+  - name: my_group
+    gid: 1001
+
+openldap_create_people:
+  - name: remco
+    cn: Remco Brink
+    sn: Brink
+    password: remco
+    email: remco@net2grid.com
+
+# These LDIFs will be applied to all people
+openldap_user_ldifs:
+  - uniquemember.ldif.j2
