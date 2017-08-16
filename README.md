@@ -32,6 +32,13 @@ Ansible 2.x
         sn: Brink
         password: remco
         email: remco@net2grid.com
+
+    openldap_create_bindings:
+      - name: hostro
+        cn: hostbinding read-only
+        sn: read-only
+        password: passwordhostro
+        email: hostmaster@net2grid.com
     
     # These LDIFs will be applied to all people
     openldap_user_ldifs:
