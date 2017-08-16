@@ -59,7 +59,7 @@
   with_items: "{{ openldap_create_people }}"
 
 - name: Create LDAP users
-  shell: ldapadd -x -D "cn=Manager,dc={{ openldap_server_domain_name.split('.')[0] }},dc={{ openldap_server_domain_name.split('.')[1] }}" -w {{ openldap_server_rootpw }} -f /tmp/users-{{ item.name }}.ldif && touch "{{ openldap_server_app_path }}/{{ item.name }}_bindings_created"
+  shell: ldapadd -x -D "cn=Manager,dc={{ openldap_server_domain_name.split('.')[0] }},dc={{ openldap_server_domain_name.split('.')[1] }}" -w {{ openldap_server_rootpw }} -f /tmp/bindings-{{ item.name }}.ldif && touch "{{ openldap_server_app_path }}/{{ item.name }}_bindings_created"
   args:
      creates: "{{ openldap_server_app_path }}/users_created"
   with_items: "{{ openldap_create_bindings }}"
