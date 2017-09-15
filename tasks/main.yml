@@ -40,6 +40,15 @@
     mode: 0644
   with_items: "{{ openldap_create_bindings }}"
 
+- name: Copy LDAP uniquemember templates
+  template:
+    src: "uniquemember.ldif.j2"
+    dest: "/tmp/uniquemember-{{ item.name }}.ldif"
+    owner: root
+    group: root
+    mode: 0644
+  with_items: "{{ openldap_add_uniquemember }}"
+
 - name: Create LDAP directory information tree (DIT)
   shell: ldapadd -x -D "cn=Manager,dc={{ openldap_server_domain_name.split('.')[0] }},dc={{ openldap_server_domain_name.split('.')[1] }}" -w {{ openldap_server_rootpw }} -f /tmp/dit-{{ item }}.ldif && touch "{{ openldap_server_app_path }}/{{ item }}_dit_created"
   args:
@@ -55,23 +64,21 @@
 - name: Create LDAP users
   shell: ldapadd -x -D "cn=Manager,dc={{ openldap_server_domain_name.split('.')[0] }},dc={{ openldap_server_domain_name.split('.')[1] }}" -w {{ openldap_server_rootpw }} -f /tmp/users-{{ item.name }}.ldif && touch "{{ openldap_server_app_path }}/{{ item.name }}_users_created"
   args:
-     creates: "{{ openldap_server_app_path }}/users_created"
+     creates: "{{ openldap_server_app_path }}/people_created"
   with_items: "{{ openldap_create_people }}"
 
 - name: Create LDAP users
   shell: ldapadd -x -D "cn=Manager,dc={{ openldap_server_domain_name.split('.')[0] }},dc={{ openldap_server_domain_name.split('.')[1] }}" -w {{ openldap_server_rootpw }} -f /tmp/bindings-{{ item.name }}.ldif && touch "{{ openldap_server_app_path }}/{{ item.name }}_bindings_created"
   args:
-     creates: "{{ openldap_server_app_path }}/users_created"
+     creates: "{{ openldap_server_app_path }}/bindings_created"
   with_items: "{{ openldap_create_bindings }}"
 
-- name: Copy additional LDIF definitions
-  template:
-    src: "{{ item }}"
-    dest: "/tmp/{{ item }}"
-    owner: root
-    group: root
-    mode: 0644
-  with_items: "{{ openldap_user_ldifs }}"
+- name: Set up LDAP uniquemembers
+  shell: ldapadd -x -D "cn=Manager,dc={{ openldap_server_domain_name.split('.')[0] }},dc={{ openldap_server_domain_name.split('.')[1] }}" -w {{ openldap_server_rootpw }} -f /tmp/uniquemember-{{ item.name }}.ldif && touch "{{ openldap_server_app_path }}/{{ item.name }}_uniquemember_created"
+  args:
+     creates: "{{ openldap_server_app_path }}/uniquemembers_created"
+  with_items: "{{ openldap_add_uniquemember }}"
+
 
 #- name: Remove LDIF files
 #  file:

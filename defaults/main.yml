@@ -14,6 +14,7 @@ openldap_create_organizationalunits:
 openldap_create_groups:
   - name: my_group
     gid: 1001
+    group_ou: ou=Groups
 
 openldap_create_people:
   - name: remco
@@ -22,6 +23,7 @@ openldap_create_people:
     password: remco
     email: remco@net2grid.com
 
-# These LDIFs will be applied to all people
-openldap_user_ldifs:
-  - uniquemember.ldif.j2
+openldap_add_uniquemember:
+  - name: remco
+    member_dn: uid=remco,ou=People
+    group_dn: cn=default-users,ou=Customers
