@@ -15,4 +15,4 @@ galaxy_info:
     - ldap
 
 dependencies:
-  - net2grid.openldap_server
+  - net2grid.389-ds

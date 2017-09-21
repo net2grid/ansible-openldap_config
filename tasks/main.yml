@@ -1,8 +1,5 @@
 ---
-# tasks file for jpnewman.openldap-server
-- name: Generate default password
-  shell: slappasswd -h {SHA} -s {{ default_user_password }}
-  register: default_password
+# tasks file for net2grid.openldap-server
 
 - name: Copy LDAP DIT templates
   template:
@@ -50,35 +47,35 @@
   with_items: "{{ openldap_add_uniquemember }}"
 
 - name: Create LDAP directory information tree (DIT)
-  shell: ldapadd -x -D "cn=Manager,dc={{ openldap_server_domain_name.split('.')[0] }},dc={{ openldap_server_domain_name.split('.')[1] }}" -w {{ openldap_server_rootpw }} -f /tmp/dit-{{ item }}.ldif && touch "{{ openldap_server_app_path }}/{{ item }}_dit_created"
+  shell: ldapadd -x -D "uid=admin,ou=Administrators,ou=TopologyManagement,o=netscaperoot" -w {{ dirsrv_admin_password }} -f /tmp/dit-{{ item }}.ldif && touch "{{ openldap_server_app_path }}/{{ item }}_dit_created"
   args:
      creates: "{{ openldap_server_app_path }}/dit_created"
   with_items: "{{ openldap_create_organizationalunits }}"
 
+- name: Create LDAP users
+  shell: ldapadd -x -D "uid=admin,ou=Administrators,ou=TopologyManagement,o=netscaperoot" -w {{ dirsrv_admin_password }} -f /tmp/users-{{ item.name }}.ldif && touch "{{ openldap_server_app_path }}/{{ item.name }}_users_created"
+  args:
+     creates: "{{ openldap_server_app_path }}/people_created"
+  with_items: "{{ openldap_create_people }}"
+
 - name: Create LDAP groups
-  shell: ldapadd -x -D "cn=Manager,dc={{ openldap_server_domain_name.split('.')[0] }},dc={{ openldap_server_domain_name.split('.')[1] }}" -w {{ openldap_server_rootpw }} -f /tmp/groups-{{ item.name }}.ldif && touch "{{ openldap_server_app_path }}/{{ item.name }}_groups_created"
+  shell: ldapadd -x -D "uid=admin,ou=Administrators,ou=TopologyManagement,o=netscaperoot" -w {{ dirsrv_admin_password }} -f /tmp/groups-{{ item.name }}.ldif && touch "{{ openldap_server_app_path }}/{{ item.name }}_groups_created"
   args:
      creates: "{{ openldap_server_app_path }}/groups_created"
   with_items: "{{ openldap_create_groups }}"
 
 - name: Create LDAP users
-  shell: ldapadd -x -D "cn=Manager,dc={{ openldap_server_domain_name.split('.')[0] }},dc={{ openldap_server_domain_name.split('.')[1] }}" -w {{ openldap_server_rootpw }} -f /tmp/users-{{ item.name }}.ldif && touch "{{ openldap_server_app_path }}/{{ item.name }}_users_created"
-  args:
-     creates: "{{ openldap_server_app_path }}/people_created"
-  with_items: "{{ openldap_create_people }}"
-
-- name: Create LDAP users
-  shell: ldapadd -x -D "cn=Manager,dc={{ openldap_server_domain_name.split('.')[0] }},dc={{ openldap_server_domain_name.split('.')[1] }}" -w {{ openldap_server_rootpw }} -f /tmp/bindings-{{ item.name }}.ldif && touch "{{ openldap_server_app_path }}/{{ item.name }}_bindings_created"
+  shell: ldapadd -x -D "uid=admin,ou=Administrators,ou=TopologyManagement,o=netscaperoot" -w {{ dirsrv_admin_password }} -f /tmp/bindings-{{ item.name }}.ldif && touch "{{ openldap_server_app_path }}/{{ item.name }}_bindings_created"
   args:
      creates: "{{ openldap_server_app_path }}/bindings_created"
   with_items: "{{ openldap_create_bindings }}"
 
-- name: Set up LDAP uniquemembers
-  shell: ldapadd -x -D "cn=Manager,dc={{ openldap_server_domain_name.split('.')[0] }},dc={{ openldap_server_domain_name.split('.')[1] }}" -w {{ openldap_server_rootpw }} -f /tmp/uniquemember-{{ item.name }}.ldif && touch "{{ openldap_server_app_path }}/{{ item.name }}_uniquemember_created"
+- name: Set up LDAP uniquemembers (these may throw errors, safe to ignore)
+  shell: ldapadd -c -x -D "uid=admin,ou=Administrators,ou=TopologyManagement,o=netscaperoot" -w {{ dirsrv_admin_password }} -f /tmp/uniquemember-{{ item.name }}.ldif && touch "{{ openldap_server_app_path }}/{{ item.name }}_uniquemember_created"
   args:
      creates: "{{ openldap_server_app_path }}/uniquemembers_created"
   with_items: "{{ openldap_add_uniquemember }}"
-
+  ignore_errors: yes
 
 #- name: Remove LDIF files
 #  file:
