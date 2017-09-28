@@ -4,24 +4,22 @@
 default_user_password: password123
 
 openldap_create_organizationalunits:
-  - Bindings
   - Customers
   - Groups
-  - Hosts
   - People
-  - System
 
 openldap_create_groups:
   - name: my_group
     gid: 1001
     group_ou: ou=Groups
 
-openldap_create_people:
+openldap_create_users:
   - name: remco
     cn: Remco Brink
     sn: Brink
     password: remco
     email: remco@net2grid.com
+    group_ou: ou=People
 
 openldap_add_uniquemember:
   - name: remco
